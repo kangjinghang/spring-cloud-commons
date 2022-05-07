@@ -36,10 +36,10 @@ public class ServiceRequestWrapper extends HttpRequestWrapper {
 		this.instance = instance;
 		this.loadBalancer = loadBalancer;
 	}
-
+	// 根据 ServiceInstance 重构请求的 url
 	@Override
 	public URI getURI() {
-		URI uri = this.loadBalancer.reconstructURI(this.instance, getRequest().getURI());
+		URI uri = this.loadBalancer.reconstructURI(this.instance, getRequest().getURI()); // 将服务名转换成真正的 ip 和 port
 		return uri;
 	}
 

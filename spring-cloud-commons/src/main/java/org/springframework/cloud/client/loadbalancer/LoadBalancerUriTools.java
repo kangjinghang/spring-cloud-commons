@@ -85,13 +85,13 @@ public final class LoadBalancerUriTools {
 	 * @param original the {@link URI} from the original request
 	 * @return the modified {@link URI}
 	 */
-	public static URI reconstructURI(ServiceInstance serviceInstance, URI original) {
+	public static URI reconstructURI(ServiceInstance serviceInstance, URI original) {  // 将服务名转换成真正的 ip 和 port，最终返回一个由 ip 和 port 组成的 URI
 		if (serviceInstance == null) {
 			throw new IllegalArgumentException("Service Instance cannot be null.");
 		}
 		return doReconstructURI(serviceInstance, original);
 	}
-
+	//  将服务名转换成真正的 ip 和 port，最终返回一个由 ip 和 port 组成的 URI
 	private static URI doReconstructURI(ServiceInstance serviceInstance, URI original) {
 		String host = serviceInstance.getHost();
 		String scheme = Optional.ofNullable(serviceInstance.getScheme())

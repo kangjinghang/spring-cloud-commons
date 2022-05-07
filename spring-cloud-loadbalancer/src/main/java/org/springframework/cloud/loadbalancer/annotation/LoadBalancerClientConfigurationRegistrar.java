@@ -52,14 +52,14 @@ public class LoadBalancerClientConfigurationRegistrar implements ImportBeanDefin
 		builder.addConstructorArgValue(configuration);
 		registry.registerBeanDefinition(name + ".LoadBalancerClientSpecification", builder.getBeanDefinition());
 	}
-
+	// @LoadBalancerClient 注解属性 configuration 上的配置 通常要与 LoadBalancerClientConfiguration 类似，否则用 LoadBalancerClientConfiguration 兜底
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
 		Map<String, Object> attrs = metadata.getAnnotationAttributes(LoadBalancerClients.class.getName(), true);
 		if (attrs != null && attrs.containsKey("value")) {
 			AnnotationAttributes[] clients = (AnnotationAttributes[]) attrs.get("value");
 			for (AnnotationAttributes client : clients) {
-				registerClientConfiguration(registry, getClientName(client), client.get("configuration"));
+				registerClientConfiguration(registry, getClientName(client), client.get("configuration"));  // 获取 @LoadBalancerClients 的 每一个 @LoadBalancerClient 注解属性 configuration 上的配置并注册为 bean
 			}
 		}
 		if (attrs != null && attrs.containsKey("defaultConfiguration")) {
@@ -70,12 +70,12 @@ public class LoadBalancerClientConfigurationRegistrar implements ImportBeanDefin
 			else {
 				name = "default." + metadata.getClassName();
 			}
-			registerClientConfiguration(registry, name, attrs.get("defaultConfiguration"));
+			registerClientConfiguration(registry, name, attrs.get("defaultConfiguration")); // 获取 @LoadBalancerClients 注解属性 defaultConfiguration 上的配置并注册为 bean
 		}
 		Map<String, Object> client = metadata.getAnnotationAttributes(LoadBalancerClient.class.getName(), true);
 		String name = getClientName(client);
 		if (name != null) {
-			registerClientConfiguration(registry, name, client.get("configuration"));
+			registerClientConfiguration(registry, name, client.get("configuration")); // 获取 @LoadBalancerClient 注解属性 configuration 上的配置并注册为 bean
 		}
 	}
 

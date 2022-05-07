@@ -59,7 +59,7 @@ import org.springframework.web.reactive.function.client.WebClient;
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnDiscoveryEnabled
-public class LoadBalancerClientConfiguration {
+public class LoadBalancerClientConfiguration { // 负载均衡客户端配置，提供默认的负载均衡算法等配置。第一次调用接口的时候，才会触发该配置类
 
 	private static final int REACTIVE_SERVICE_INSTANCE_SUPPLIER_ORDER = 193827465;
 

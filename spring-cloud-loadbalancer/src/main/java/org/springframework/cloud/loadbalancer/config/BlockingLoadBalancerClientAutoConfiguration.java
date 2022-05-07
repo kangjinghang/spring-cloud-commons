@@ -51,7 +51,7 @@ import org.springframework.web.client.RestTemplate;
 @AutoConfigureBefore({ org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration.class })
 @ConditionalOnClass(RestTemplate.class)
 public class BlockingLoadBalancerClientAutoConfiguration {
-
+	// 注入 LoadBalancerClient
 	@Bean
 	@ConditionalOnBean(LoadBalancerClientFactory.class)
 	@ConditionalOnMissingBean

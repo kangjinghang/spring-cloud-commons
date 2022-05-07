@@ -35,7 +35,7 @@ import org.springframework.core.annotation.AliasFor;
  * @author Dave Syer
  */
 @Configuration(proxyBeanMethods = false)
-@Import(LoadBalancerClientConfigurationRegistrar.class)
+@Import(LoadBalancerClientConfigurationRegistrar.class) // 导入了 LoadBalancerClientConfigurationRegistrar 配置类
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

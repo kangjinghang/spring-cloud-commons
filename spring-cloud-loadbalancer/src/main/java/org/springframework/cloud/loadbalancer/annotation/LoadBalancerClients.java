@@ -36,7 +36,7 @@ import org.springframework.context.annotation.Import;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
 @Documented
-@Import(LoadBalancerClientConfigurationRegistrar.class)
+@Import(LoadBalancerClientConfigurationRegistrar.class) // 导入了 LoadBalancerClientConfigurationRegistrar 配置类
 public @interface LoadBalancerClients {
 
 	LoadBalancerClient[] value() default {};

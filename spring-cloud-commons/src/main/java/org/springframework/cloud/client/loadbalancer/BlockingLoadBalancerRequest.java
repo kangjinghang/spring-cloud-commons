@@ -43,16 +43,16 @@ class BlockingLoadBalancerRequest implements HttpRequestLoadBalancerRequest<Clie
 		this.transformers = transformers;
 		this.clientHttpRequestData = clientHttpRequestData;
 	}
-
+	// ServiceRequestWrapper 继承了 spring-web 的 HttpRequestWrapper，包装了 HttpRequest，重写了 getURI 方法，会将 uri 中的服务名改写成 ip+port 形式
 	@Override
 	public ClientHttpResponse apply(ServiceInstance instance) throws Exception {
-		HttpRequest serviceRequest = new ServiceRequestWrapper(clientHttpRequestData.request, instance, loadBalancer);
-		if (this.transformers != null) {
-			for (LoadBalancerRequestTransformer transformer : this.transformers) {
-				serviceRequest = transformer.transformRequest(serviceRequest, instance);
+		HttpRequest serviceRequest = new ServiceRequestWrapper(clientHttpRequestData.request, instance, loadBalancer); // 创建 ServiceRequestWrapper，将 HttpRequest、ServiceInstance 还有 LoadBalancerClient 对象进行了包装
+		if (this.transformers != null) { // 判断 transformers 列表是否等于null
+			for (LoadBalancerRequestTransformer transformer : this.transformers) { // 迭代 transformers 列表并调用 LoadBalancerRequestTransformer 的 transformRequest 方法
+				serviceRequest = transformer.transformRequest(serviceRequest, instance); // 如果想在获取可用服务实例之后，发起远程调用之前，比如想改变目标服务，那么就可以自己实现 LoadBalancerRequestTransformer 接口，重写 transformRequest 方法
 			}
 		}
-		return clientHttpRequestData.execution.execute(serviceRequest, clientHttpRequestData.body);
+		return clientHttpRequestData.execution.execute(serviceRequest, clientHttpRequestData.body); // 调用 ClientHttpRequestExecution 的 execute 方法，ClientHttpRequestExecution 接口只有一个实现，就是 InterceptingRequestExecution
 	}
 
 	@Override

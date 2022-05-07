@@ -53,21 +53,21 @@ import org.springframework.web.client.RestTemplate;
 @ConditionalOnBean(LoadBalancerClient.class)
 @EnableConfigurationProperties(LoadBalancerClientsProperties.class)
 public class LoadBalancerAutoConfiguration {
-
+	// 收集 spring 容器中被 @LoadBalanced 标记的 RestTemplate
 	@LoadBalanced
 	@Autowired(required = false)
 	private List<RestTemplate> restTemplates = Collections.emptyList();
 
 	@Autowired(required = false)
 	private List<LoadBalancerRequestTransformer> transformers = Collections.emptyList();
-
+	// 注入 SmartInitializingSingleton
 	@Bean
 	public SmartInitializingSingleton loadBalancedRestTemplateInitializerDeprecated(
 			final ObjectProvider<List<RestTemplateCustomizer>> restTemplateCustomizers) {
 		return () -> restTemplateCustomizers.ifAvailable(customizers -> {
 			for (RestTemplate restTemplate : LoadBalancerAutoConfiguration.this.restTemplates) {
 				for (RestTemplateCustomizer customizer : customizers) {
-					customizer.customize(restTemplate);
+					customizer.customize(restTemplate); // 将 LoadBalancerInterceptor 和 RestTemplateCustomizer，通过循环调用 customizer.customize(restTemplate); 方法将两者做了关联
 				}
 			}
 		});
@@ -82,19 +82,19 @@ public class LoadBalancerAutoConfiguration {
 	@Configuration(proxyBeanMethods = false)
 	@Conditional(RetryMissingOrDisabledCondition.class)
 	static class LoadBalancerInterceptorConfig {
-
+		// 注入 LoadBalancerInterceptor
 		@Bean
 		public LoadBalancerInterceptor loadBalancerInterceptor(LoadBalancerClient loadBalancerClient,
 				LoadBalancerRequestFactory requestFactory) {
 			return new LoadBalancerInterceptor(loadBalancerClient, requestFactory);
 		}
-
+		// 注入 RestTemplateCustomizer
 		@Bean
 		@ConditionalOnMissingBean
 		public RestTemplateCustomizer restTemplateCustomizer(final LoadBalancerInterceptor loadBalancerInterceptor) {
 			return restTemplate -> {
 				List<ClientHttpRequestInterceptor> list = new ArrayList<>(restTemplate.getInterceptors());
-				list.add(loadBalancerInterceptor);
+				list.add(loadBalancerInterceptor); // 将 LoadBalancerInterceptor 设置到 restTemplate 中去的
 				restTemplate.setInterceptors(list);
 			};
 		}

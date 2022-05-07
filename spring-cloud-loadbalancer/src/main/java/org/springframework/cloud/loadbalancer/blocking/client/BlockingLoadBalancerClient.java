@@ -74,21 +74,21 @@ public class BlockingLoadBalancerClient implements LoadBalancerClient {
 	public BlockingLoadBalancerClient(ReactiveLoadBalancer.Factory<ServiceInstance> loadBalancerClientFactory) {
 		this.loadBalancerClientFactory = loadBalancerClientFactory;
 	}
-
+	// LoadBalancerRequest(BlockingLoadBalancerRequest) 内部持有了被拦截的 HttpRequest request, byte[] body , ClientHttpRequestExecution execution 和 LoadBalancerClient loadBalancer 以及 List<LoadBalancerRequestTransformer> transformers
 	@Override
 	public <T> T execute(String serviceId, LoadBalancerRequest<T> request) throws IOException {
 		String hint = getHint(serviceId);
 		LoadBalancerRequestAdapter<T, TimedRequestContext> lbRequest = new LoadBalancerRequestAdapter<>(request,
-				buildRequestContext(request, hint));
+				buildRequestContext(request, hint)); // adapt 到 LoadBalancerRequest，多了一个 TimedRequestContext
 		Set<LoadBalancerLifecycle> supportedLifecycleProcessors = getSupportedLifecycleProcessors(serviceId);
 		supportedLifecycleProcessors.forEach(lifecycle -> lifecycle.onStart(lbRequest));
-		ServiceInstance serviceInstance = choose(serviceId, lbRequest);
+		ServiceInstance serviceInstance = choose(serviceId, lbRequest); // 【这里是关键】，serviceName -> real serviceInstance，已经得到了负载均衡后的 ServiceInstance，这里返回的 ServiceInstance 对象中，内部持有的就是真实的ip地址
 		if (serviceInstance == null) {
 			supportedLifecycleProcessors.forEach(lifecycle -> lifecycle.onComplete(
 					new CompletionContext<>(CompletionContext.Status.DISCARD, lbRequest, new EmptyResponse())));
 			throw new IllegalStateException("No instances available for " + serviceId);
 		}
-		return execute(serviceId, serviceInstance, lbRequest);
+		return execute(serviceId, serviceInstance, lbRequest); // 执行 execute 方法，调用远程服务
 	}
 
 	private <T> TimedRequestContext buildRequestContext(LoadBalancerRequest<T> delegate, String hint) {
@@ -111,7 +111,7 @@ public class BlockingLoadBalancerClient implements LoadBalancerClient {
 		supportedLifecycleProcessors
 				.forEach(lifecycle -> lifecycle.onStartRequest(lbRequest, new DefaultResponse(serviceInstance)));
 		try {
-			T response = request.apply(serviceInstance);
+			T response = request.apply(serviceInstance); // 调用 LoadBalancerRequest 的 apply 方法
 			Object clientResponse = getClientResponse(response);
 			supportedLifecycleProcessors
 					.forEach(lifecycle -> lifecycle.onComplete(new CompletionContext<>(CompletionContext.Status.SUCCESS,
@@ -151,10 +151,10 @@ public class BlockingLoadBalancerClient implements LoadBalancerClient {
 				loadBalancerClientFactory.getInstances(serviceId, LoadBalancerLifecycle.class),
 				DefaultRequestContext.class, Object.class, ServiceInstance.class);
 	}
-
+	//  将服务名转换成真正的 ip 和 port
 	@Override
 	public URI reconstructURI(ServiceInstance serviceInstance, URI original) {
-		return LoadBalancerUriTools.reconstructURI(serviceInstance, original);
+		return LoadBalancerUriTools.reconstructURI(serviceInstance, original); // 最终返回一个由 ip 和 port 组成的 URI
 	}
 
 	@Override
@@ -164,7 +164,7 @@ public class BlockingLoadBalancerClient implements LoadBalancerClient {
 
 	@Override
 	public <T> ServiceInstance choose(String serviceId, Request<T> request) {
-		ReactiveLoadBalancer<ServiceInstance> loadBalancer = loadBalancerClientFactory.getInstance(serviceId);
+		ReactiveLoadBalancer<ServiceInstance> loadBalancer = loadBalancerClientFactory.getInstance(serviceId); // 调用 loadBalancerClientFactory 的 getInstance 方法
 		if (loadBalancer == null) {
 			return null;
 		}

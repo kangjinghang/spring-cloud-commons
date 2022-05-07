@@ -65,17 +65,17 @@ public class LoadBalancerClientFactory extends NamedContextFactory<LoadBalancerC
 	}
 
 	public LoadBalancerClientFactory(LoadBalancerClientsProperties properties) {
-		super(LoadBalancerClientConfiguration.class, NAMESPACE, PROPERTY_NAME);
+		super(LoadBalancerClientConfiguration.class, NAMESPACE, PROPERTY_NAME); // 调用父类 NamedContextFactory 的构造器，LoadBalancerClientConfiguration.class赋值给 defaultConfigType。NamedContextFactory 会为 Spring ApplicationContext 创建一个 子ApplicationContext
 		this.properties = properties;
 	}
 
 	public static String getName(Environment environment) {
 		return environment.getProperty(PROPERTY_NAME);
 	}
-
+	// 获取负载均衡器
 	@Override
 	public ReactiveLoadBalancer<ServiceInstance> getInstance(String serviceId) {
-		return getInstance(serviceId, ReactorServiceInstanceLoadBalancer.class);
+		return getInstance(serviceId, ReactorServiceInstanceLoadBalancer.class); // 一个 serviceId 对应一个父类的一个 context，调用父类的 getInstance 方法
 	}
 
 	@Override

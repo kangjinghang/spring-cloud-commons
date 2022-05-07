@@ -31,9 +31,9 @@ import org.springframework.util.Assert;
  * @author Ryan Baxter
  * @author William Tran
  */
-public class LoadBalancerInterceptor implements ClientHttpRequestInterceptor {
+public class LoadBalancerInterceptor implements ClientHttpRequestInterceptor { // 就是通过这个 ClientHttpRequestInterceptor 拦截器实现负载均衡的
 
-	private LoadBalancerClient loadBalancer;
+	private LoadBalancerClient loadBalancer; // 负责负载均衡的 BlockingLoadBalancerClient
 
 	private LoadBalancerRequestFactory requestFactory;
 
@@ -53,7 +53,7 @@ public class LoadBalancerInterceptor implements ClientHttpRequestInterceptor {
 		final URI originalUri = request.getURI();
 		String serviceName = originalUri.getHost();
 		Assert.state(serviceName != null, "Request URI does not contain a valid hostname: " + originalUri);
-		return this.loadBalancer.execute(serviceName, this.requestFactory.createRequest(request, body, execution));
+		return this.loadBalancer.execute(serviceName, this.requestFactory.createRequest(request, body, execution)); // 创建了 LoadBalancerRequest，将真正的执行委托给 BlockingLoadBalancerClient 去执行
 	}
 
 }
